@@ -41,12 +41,8 @@ build-all: clean
 	GOOS=linux GOARCH=amd64 $(GOBUILD) $(LDFLAGS) -o $(DIST_DIR)/$(BINARY_NAME)-linux-amd64 $(CMD_DIR)/main.go
 	@echo "Building for Linux ARM64..."
 	GOOS=linux GOARCH=arm64 $(GOBUILD) $(LDFLAGS) -o $(DIST_DIR)/$(BINARY_NAME)-linux-arm64 $(CMD_DIR)/main.go
-	@echo "Building for Darwin AMD64..."
-	GOOS=darwin GOARCH=amd64 $(GOBUILD) $(LDFLAGS) -o $(DIST_DIR)/$(BINARY_NAME)-darwin-amd64 $(CMD_DIR)/main.go
-	@echo "Building for Darwin ARM64..."
+	@echo "Building for Darwin ARM64 (Apple Silicon)..."
 	GOOS=darwin GOARCH=arm64 $(GOBUILD) $(LDFLAGS) -o $(DIST_DIR)/$(BINARY_NAME)-darwin-arm64 $(CMD_DIR)/main.go
-	@echo "Building for Windows AMD64..."
-	GOOS=windows GOARCH=amd64 $(GOBUILD) $(LDFLAGS) -o $(DIST_DIR)/$(BINARY_NAME)-windows-amd64.exe $(CMD_DIR)/main.go
 	@echo "Build complete! Binaries in $(DIST_DIR)/"
 
 ## install: Install the binary to /usr/local/bin
@@ -117,24 +113,15 @@ example: build
 release-dry: clean
 	@echo "Simulating release for version $(VERSION)..."
 	@mkdir -p $(DIST_DIR)
-	@for os in linux darwin windows; do \
-		for arch in amd64 arm64; do \
-			if [ "$$os" = "windows" ] && [ "$$arch" = "arm64" ]; then \
-				continue; \
-			fi; \
-			output="$(DIST_DIR)/$(BINARY_NAME)-$$os-$$arch"; \
-			if [ "$$os" = "windows" ]; then \
-				output="$$output.exe"; \
-			fi; \
-			echo "Building $$output..."; \
-			GOOS=$$os GOARCH=$$arch $(GOBUILD) $(LDFLAGS) -o $$output $(CMD_DIR)/main.go; \
-			if [ "$$os" = "windows" ]; then \
-				cd $(DIST_DIR) && zip "$$(basename $$output).zip" "$$(basename $$output)" && rm "$$(basename $$output)" && cd ..; \
-			else \
-				cd $(DIST_DIR) && tar czf "$$(basename $$output).tar.gz" "$$(basename $$output)" && rm "$$(basename $$output)" && cd ..; \
-			fi; \
-		done; \
-	done
+	@echo "Building Linux AMD64..."
+	@GOOS=linux GOARCH=amd64 $(GOBUILD) $(LDFLAGS) -o $(DIST_DIR)/$(BINARY_NAME)-linux-amd64 $(CMD_DIR)/main.go
+	@cd $(DIST_DIR) && tar czf $(BINARY_NAME)-linux-amd64.tar.gz $(BINARY_NAME)-linux-amd64 && rm $(BINARY_NAME)-linux-amd64
+	@echo "Building Linux ARM64..."
+	@GOOS=linux GOARCH=arm64 $(GOBUILD) $(LDFLAGS) -o $(DIST_DIR)/$(BINARY_NAME)-linux-arm64 $(CMD_DIR)/main.go
+	@cd $(DIST_DIR) && tar czf $(BINARY_NAME)-linux-arm64.tar.gz $(BINARY_NAME)-linux-arm64 && rm $(BINARY_NAME)-linux-arm64
+	@echo "Building Darwin ARM64 (Apple Silicon)..."
+	@GOOS=darwin GOARCH=arm64 $(GOBUILD) $(LDFLAGS) -o $(DIST_DIR)/$(BINARY_NAME)-darwin-arm64 $(CMD_DIR)/main.go
+	@cd $(DIST_DIR) && tar czf $(BINARY_NAME)-darwin-arm64.tar.gz $(BINARY_NAME)-darwin-arm64 && rm $(BINARY_NAME)-darwin-arm64
 	@echo "Release artifacts in $(DIST_DIR)/"
 	@ls -lh $(DIST_DIR)/
 

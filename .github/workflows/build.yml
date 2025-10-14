@@ -8,7 +8,7 @@ on:
       - 'v*.*.*'
 
 env:
-  GO_VERSION: '1.21'
+  GO_VERSION: '1.24'
   BINARY_NAME: 'bom-dagger'
 
 jobs:
@@ -22,11 +22,7 @@ jobs:
           - os: linux
             arch: arm64
           - os: darwin
-            arch: amd64
-          - os: darwin
             arch: arm64
-          - os: windows
-            arch: amd64
 
     steps:
       - name: Checkout code

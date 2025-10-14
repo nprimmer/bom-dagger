@@ -136,7 +136,7 @@ Components in the same step can be deployed in parallel as they have no interdep
 ## Development
 
 ### Prerequisites
-- Go 1.20 or later
+- Go 1.24 or later
 - Make (optional, for using Makefile commands)
 
 ### Building
@@ -176,8 +176,7 @@ git push origin v1.0.0
 
 The GitHub Action will automatically build and create a release with binaries for:
 - Linux (amd64, arm64)
-- macOS (amd64, arm64)
-- Windows (amd64)
+- macOS (arm64)
 
 ## Contributing
 
