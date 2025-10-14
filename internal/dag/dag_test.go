@@ -9,7 +9,7 @@ import (
 func TestNewGraph(t *testing.T) {
 	g := New()
 	if g == nil {
-		t.Error("New() returned nil")
+		t.Fatal("New() returned nil")
 	}
 	if g.Nodes == nil {
 		t.Error("Nodes map is nil")

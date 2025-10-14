@@ -432,7 +432,7 @@ func BenchmarkParse(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		reader.Seek(0, 0)
+		_, _ = reader.Seek(0, 0)
 		_, _ = p.Parse(reader)
 	}
 }
