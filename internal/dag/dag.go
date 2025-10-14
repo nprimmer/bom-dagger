@@ -10,7 +10,7 @@ import (
 type Node struct {
 	ID           string
 	Component    *sbom.Component
-	Service      *sbom.Service  // For CycloneDX 1.6 services
+	Service      *sbom.Service // For CycloneDX 1.6 services
 	Dependencies []*Node
 	Dependents   []*Node
 }

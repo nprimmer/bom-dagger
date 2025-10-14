@@ -25,10 +25,10 @@ func TestIntegrationSimpleSBOM(t *testing.T) {
 	sbomPath := filepath.Join("..", "..", "testdata", "sboms", "simple-1.6.json")
 
 	tests := []struct {
-		name     string
-		args     []string
-		wantOut  []string
-		wantErr  bool
+		name    string
+		args    []string
+		wantOut []string
+		wantErr bool
 	}{
 		{
 			name: "deployment order",
