@@ -1,0 +1,102 @@
+# .goreleaser.yml
+# This is an optional configuration file for GoReleaser
+# https://goreleaser.com
+
+before:
+  hooks:
+    - go mod tidy
+    - go test ./...
+
+builds:
+  - id: bom-dagger
+    main: ./cmd/bom-dagger
+    binary: bom-dagger
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ignore:
+      - goos: windows
+        goarch: arm64
+    ldflags:
+      - -s -w
+      - -X main.Version={{.Version}}
+
+archives:
+  - id: bom-dagger-archive
+    name_template: >-
+      {{ .ProjectName }}-
+      {{- .Os }}-
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else }}{{ .Arch }}{{ end }}
+    format_overrides:
+      - goos: windows
+        format: zip
+
+checksum:
+  name_template: 'checksums.txt'
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - '^chore:'
+      - '^ci:'
+      - Merge pull request
+      - Merge branch
+  groups:
+    - title: 'Features'
+      regexp: "^.*feat[(\\w)]*:+.*$"
+      order: 0
+    - title: 'Bug Fixes'
+      regexp: "^.*fix[(\\w)]*:+.*$"
+      order: 1
+    - title: 'Performance Improvements'
+      regexp: "^.*perf[(\\w)]*:+.*$"
+      order: 2
+    - title: 'Refactor'
+      regexp: "^.*refactor[(\\w)]*:+.*$"
+      order: 3
+    - title: 'Build'
+      regexp: "^.*build[(\\w)]*:+.*$"
+      order: 4
+    - title: 'Others'
+      order: 999
+
+snapshot:
+  name_template: "{{ incpatch .Version }}-next"
+
+release:
+  github:
+    owner: nprimmer
+    name: bom-dagger
+
+  header: |
+    ## bom-dagger {{ .Tag }}
+
+    Creates a DAG for deployment order from a CycloneDX SBOM.
+
+  footer: |
+    ## Installation
+
+    ### macOS/Linux
+    ```bash
+    # Download the appropriate binary for your system
+    curl -LO https://github.com/nprimmer/bom-dagger/releases/download/{{ .Tag }}/bom-dagger-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m).tar.gz
+    tar -xzf bom-dagger-*.tar.gz
+    chmod +x bom-dagger
+    sudo mv bom-dagger /usr/local/bin/
+    ```
+
+    ### Windows
+    Download the Windows executable from the release assets and add it to your PATH.
+
+    ## Documentation
+    See the [README](https://github.com/nprimmer/bom-dagger/blob/main/README.md) for usage details.

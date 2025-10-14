@@ -1,0 +1,108 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e8b2c3a-0000-4000-8000-000000000003",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2024-01-15T10:00:00Z",
+    "component": {
+      "type": "application",
+      "bom-ref": "main-app",
+      "name": "Main Application",
+      "version": "1.0.0",
+      "components": [
+        {
+          "type": "library",
+          "bom-ref": "embedded-lib",
+          "name": "Embedded Library",
+          "version": "0.5.0"
+        }
+      ]
+    }
+  },
+  "components": [
+    {
+      "type": "application",
+      "bom-ref": "module-a",
+      "name": "Module A",
+      "version": "2.0.0",
+      "components": [
+        {
+          "type": "library",
+          "bom-ref": "submodule-a1",
+          "name": "Submodule A1",
+          "version": "1.0.0",
+          "scope": "required"
+        },
+        {
+          "type": "library",
+          "bom-ref": "submodule-a2",
+          "name": "Submodule A2",
+          "version": "1.1.0",
+          "scope": "optional"
+        }
+      ]
+    },
+    {
+      "type": "application",
+      "bom-ref": "module-b",
+      "name": "Module B",
+      "version": "3.0.0",
+      "components": [
+        {
+          "type": "library",
+          "bom-ref": "submodule-b1",
+          "name": "Submodule B1",
+          "version": "2.0.0",
+          "properties": [
+            {
+              "name": "deployment.priority",
+              "value": "high"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "shared-lib",
+      "name": "Shared Library",
+      "version": "4.0.0",
+      "group": "com.example"
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "main-app",
+      "dependsOn": ["module-a", "module-b"]
+    },
+    {
+      "ref": "embedded-lib",
+      "dependsOn": ["shared-lib"]
+    },
+    {
+      "ref": "module-a",
+      "dependsOn": ["shared-lib"]
+    },
+    {
+      "ref": "submodule-a1",
+      "dependsOn": ["shared-lib"]
+    },
+    {
+      "ref": "submodule-a2",
+      "dependsOn": ["submodule-a1"]
+    },
+    {
+      "ref": "module-b",
+      "dependsOn": ["submodule-b1"]
+    },
+    {
+      "ref": "submodule-b1",
+      "dependsOn": ["shared-lib"]
+    },
+    {
+      "ref": "shared-lib",
+      "dependsOn": []
+    }
+  ]
+}

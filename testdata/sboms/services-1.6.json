@@ -1,0 +1,72 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e8b2c3a-0000-4000-8000-000000000002",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2024-01-15T10:00:00Z"
+  },
+  "components": [
+    {
+      "type": "application",
+      "bom-ref": "app-frontend",
+      "name": "Frontend Application",
+      "version": "1.0.0",
+      "description": "React frontend"
+    },
+    {
+      "type": "library",
+      "bom-ref": "database",
+      "name": "PostgreSQL",
+      "version": "15.0"
+    }
+  ],
+  "services": [
+    {
+      "bom-ref": "api-service",
+      "name": "REST API Service",
+      "version": "2.0.0",
+      "description": "Main API service",
+      "endpoints": [
+        "https://api.example.com/v1",
+        "https://api.example.com/v2"
+      ]
+    },
+    {
+      "bom-ref": "auth-service",
+      "name": "Authentication Service",
+      "version": "1.5.0",
+      "description": "OAuth2 authentication service",
+      "endpoints": [
+        "https://auth.example.com"
+      ]
+    },
+    {
+      "bom-ref": "cache-service",
+      "name": "Redis Cache Service",
+      "description": "Caching layer"
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "app-frontend",
+      "dependsOn": ["api-service"]
+    },
+    {
+      "ref": "api-service",
+      "dependsOn": ["auth-service", "database", "cache-service"]
+    },
+    {
+      "ref": "auth-service",
+      "dependsOn": ["database"]
+    },
+    {
+      "ref": "database",
+      "dependsOn": []
+    },
+    {
+      "ref": "cache-service",
+      "dependsOn": []
+    }
+  ]
+}

@@ -1,0 +1,228 @@
+name: Build and Release
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*.*.*'
+
+env:
+  GO_VERSION: '1.21'
+  BINARY_NAME: 'bom-dagger'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - os: linux
+            arch: amd64
+          - os: linux
+            arch: arm64
+          - os: darwin
+            arch: amd64
+          - os: darwin
+            arch: arm64
+          - os: windows
+            arch: amd64
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Get version
+        id: version
+        run: |
+          if [[ $GITHUB_REF == refs/tags/* ]]; then
+            VERSION=${GITHUB_REF#refs/tags/}
+          else
+            VERSION="dev-$(git rev-parse --short HEAD)"
+          fi
+          echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
+          echo "Building version: ${VERSION}"
+
+      - name: Build binary
+        env:
+          GOOS: ${{ matrix.os }}
+          GOARCH: ${{ matrix.arch }}
+          VERSION: ${{ steps.version.outputs.VERSION }}
+        run: |
+          OUTPUT_NAME="${BINARY_NAME}-${GOOS}-${GOARCH}"
+          if [ "${GOOS}" = "windows" ]; then
+            OUTPUT_NAME="${OUTPUT_NAME}.exe"
+          fi
+
+          echo "Building ${OUTPUT_NAME}..."
+          go build -ldflags="-X main.Version=${VERSION}" \
+                   -o "dist/${OUTPUT_NAME}" \
+                   cmd/bom-dagger/main.go
+
+          # Create archive
+          cd dist
+          if [ "${GOOS}" = "windows" ]; then
+            zip "${OUTPUT_NAME}.zip" "${OUTPUT_NAME}"
+          else
+            tar czf "${OUTPUT_NAME}.tar.gz" "${OUTPUT_NAME}"
+          fi
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.BINARY_NAME }}-${{ matrix.os }}-${{ matrix.arch }}
+          path: |
+            dist/*.tar.gz
+            dist/*.zip
+          retention-days: 7
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Run tests
+        run: |
+          go test -v ./...
+          go test -race -coverprofile=coverage.txt -covermode=atomic ./...
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage.txt
+          flags: unittests
+          name: codecov-umbrella
+
+  release:
+    needs: [build, test]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Prepare release assets
+        run: |
+          mkdir -p release
+          find artifacts -type f \( -name "*.tar.gz" -o -name "*.zip" \) -exec mv {} release/ \;
+          ls -la release/
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          # Get the previous tag
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          if [ -z "$PREV_TAG" ]; then
+            echo "CHANGELOG=Initial release" >> $GITHUB_OUTPUT
+          else
+            CHANGELOG=$(git log ${PREV_TAG}..HEAD --pretty=format:"- %s" | head -20)
+            echo "CHANGELOG<<EOF" >> $GITHUB_OUTPUT
+            echo "$CHANGELOG" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: release/*
+          draft: false
+          prerelease: ${{ contains(github.ref, '-rc') || contains(github.ref, '-beta') || contains(github.ref, '-alpha') }}
+          generate_release_notes: true
+          body: |
+            ## Changes
+            ${{ steps.changelog.outputs.CHANGELOG }}
+
+            ## Installation
+
+            ### macOS/Linux
+            ```bash
+            # Download the appropriate binary for your system
+            curl -LO https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/bom-dagger-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m).tar.gz
+            tar -xzf bom-dagger-*.tar.gz
+            chmod +x bom-dagger
+            sudo mv bom-dagger /usr/local/bin/
+            ```
+
+            ### Windows
+            Download the Windows executable from the release assets below and add it to your PATH.
+
+            ## Usage
+            ```bash
+            bom-dagger -i <sbom-file.json>
+            ```
+
+            See the [README](https://github.com/${{ github.repository }}/blob/main/README.md) for more details.
+
+  create-latest-dev:
+    needs: [build, test]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Prepare artifacts
+        run: |
+          mkdir -p release
+          find artifacts -type f \( -name "*.tar.gz" -o -name "*.zip" \) -exec mv {} release/ \;
+
+          # Rename files to include 'latest' instead of version
+          cd release
+          for file in *; do
+            newname=$(echo $file | sed 's/-dev-[^.]*/-latest/g')
+            if [ "$file" != "$newname" ]; then
+              mv "$file" "$newname"
+            fi
+          done
+          ls -la
+
+      - name: Update latest development build
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: latest-dev
+          name: Latest Development Build
+          files: release/*
+          draft: false
+          prerelease: true
+          body: |
+            ## Latest Development Build
+
+            This is an automated development build from the main branch.
+
+            **Commit:** ${{ github.sha }}
+            **Date:** ${{ github.event.head_commit.timestamp }}
+
+            ### ⚠️ Warning
+            This is a development build and may be unstable. For production use, please download a stable release.
+
+            ### Installation
+            ```bash
+            # Download for your platform
+            curl -LO https://github.com/${{ github.repository }}/releases/download/latest-dev/bom-dagger-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m)-latest.tar.gz
+            tar -xzf bom-dagger-*-latest.tar.gz
+            chmod +x bom-dagger
+            ```

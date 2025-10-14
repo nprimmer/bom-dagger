@@ -1,0 +1,43 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e8b2c3a-0000-4000-8000-000000000004",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2024-01-15T10:00:00Z"
+  },
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "comp-x",
+      "name": "Component X",
+      "version": "1.0.0"
+    },
+    {
+      "type": "library",
+      "bom-ref": "comp-y",
+      "name": "Component Y",
+      "version": "1.0.0"
+    },
+    {
+      "type": "library",
+      "bom-ref": "comp-z",
+      "name": "Component Z",
+      "version": "1.0.0"
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "comp-x",
+      "dependsOn": ["comp-y"]
+    },
+    {
+      "ref": "comp-y",
+      "dependsOn": ["comp-z"]
+    },
+    {
+      "ref": "comp-z",
+      "dependsOn": ["comp-x"]
+    }
+  ]
+}

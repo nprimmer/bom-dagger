@@ -1,0 +1,113 @@
+name: Test and Lint
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+env:
+  GO_VERSION: '1.21'
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Run go fmt
+        run: |
+          fmt_output=$(go fmt ./...)
+          if [ -n "$fmt_output" ]; then
+            echo "The following files need formatting:"
+            echo "$fmt_output"
+            exit 1
+          fi
+
+      - name: Run go vet
+        run: go vet ./...
+
+      - name: Install golangci-lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: latest
+          args: --timeout=5m
+
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        go-version: ['1.20', '1.21', '1.22']
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go-version }}
+
+      - name: Get dependencies
+        run: |
+          go mod download
+          go mod verify
+
+      - name: Run tests
+        run: go test -v -race -coverprofile=coverage.txt -covermode=atomic ./...
+
+      - name: Upload coverage
+        if: matrix.os == 'ubuntu-latest' && matrix.go-version == '1.21'
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage.txt
+          flags: unittests
+          name: codecov-umbrella
+
+  integration:
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Build binary
+        run: go build -o bom-dagger cmd/bom-dagger/main.go
+
+      - name: Test with simple SBOM
+        run: ./bom-dagger -i testdata/sboms/simple-1.6.json
+
+      - name: Test with services SBOM
+        run: ./bom-dagger -i testdata/sboms/services-1.6.json -g
+
+      - name: Test with microservices SBOM
+        run: ./bom-dagger -i testdata/sboms/microservices-1.6.json -s
+
+      - name: Test cycle detection
+        run: |
+          if ./bom-dagger -i testdata/sboms/cycle-1.6.json 2>&1 | grep -q "cycle"; then
+            echo "✓ Cycle detection works"
+          else
+            echo "✗ Cycle detection failed"
+            exit 1
+          fi
+
+      - name: Test version flag
+        run: |
+          ./bom-dagger -v
+          ./bom-dagger --version

@@ -1,0 +1,265 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e8b2c3a-0000-4000-8000-000000000006",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2024-01-15T10:00:00Z",
+    "supplier": {
+      "name": "Example Corp",
+      "url": ["https://example.com"]
+    },
+    "tools": [
+      {
+        "vendor": "Example Corp",
+        "name": "SBOM Generator",
+        "version": "2.0.0"
+      }
+    ]
+  },
+  "components": [
+    {
+      "type": "application",
+      "bom-ref": "frontend-web",
+      "name": "Web Frontend",
+      "version": "3.2.1",
+      "description": "React-based web application",
+      "purl": "pkg:npm/frontend-web@3.2.1"
+    },
+    {
+      "type": "application",
+      "bom-ref": "frontend-mobile",
+      "name": "Mobile App",
+      "version": "2.0.0",
+      "description": "React Native mobile application"
+    },
+    {
+      "type": "library",
+      "bom-ref": "postgres-primary",
+      "name": "PostgreSQL Primary",
+      "version": "15.2",
+      "purl": "pkg:docker/postgres@15.2"
+    },
+    {
+      "type": "library",
+      "bom-ref": "postgres-replica",
+      "name": "PostgreSQL Replica",
+      "version": "15.2",
+      "purl": "pkg:docker/postgres@15.2"
+    },
+    {
+      "type": "library",
+      "bom-ref": "mongodb",
+      "name": "MongoDB",
+      "version": "6.0.5",
+      "purl": "pkg:docker/mongo@6.0.5"
+    },
+    {
+      "type": "library",
+      "bom-ref": "redis-master",
+      "name": "Redis Master",
+      "version": "7.2.0"
+    },
+    {
+      "type": "library",
+      "bom-ref": "redis-slave",
+      "name": "Redis Slave",
+      "version": "7.2.0"
+    },
+    {
+      "type": "library",
+      "bom-ref": "kafka",
+      "name": "Apache Kafka",
+      "version": "3.5.0"
+    },
+    {
+      "type": "library",
+      "bom-ref": "zookeeper",
+      "name": "Apache Zookeeper",
+      "version": "3.8.1"
+    },
+    {
+      "type": "library",
+      "bom-ref": "elasticsearch",
+      "name": "Elasticsearch",
+      "version": "8.9.0"
+    },
+    {
+      "type": "library",
+      "bom-ref": "kibana",
+      "name": "Kibana",
+      "version": "8.9.0"
+    },
+    {
+      "type": "library",
+      "bom-ref": "prometheus",
+      "name": "Prometheus",
+      "version": "2.45.0"
+    },
+    {
+      "type": "library",
+      "bom-ref": "grafana",
+      "name": "Grafana",
+      "version": "10.0.0"
+    }
+  ],
+  "services": [
+    {
+      "bom-ref": "api-gateway",
+      "name": "API Gateway",
+      "version": "1.8.0",
+      "description": "Kong API Gateway",
+      "endpoints": ["https://api.example.com"]
+    },
+    {
+      "bom-ref": "auth-service",
+      "name": "Authentication Service",
+      "version": "2.1.0",
+      "description": "OAuth2/OpenID Connect service"
+    },
+    {
+      "bom-ref": "user-service",
+      "name": "User Management Service",
+      "version": "3.0.0"
+    },
+    {
+      "bom-ref": "product-service",
+      "name": "Product Catalog Service",
+      "version": "2.5.0"
+    },
+    {
+      "bom-ref": "order-service",
+      "name": "Order Processing Service",
+      "version": "4.0.0"
+    },
+    {
+      "bom-ref": "payment-service",
+      "name": "Payment Service",
+      "version": "1.2.0"
+    },
+    {
+      "bom-ref": "notification-service",
+      "name": "Notification Service",
+      "version": "2.0.0"
+    },
+    {
+      "bom-ref": "analytics-service",
+      "name": "Analytics Service",
+      "version": "1.5.0"
+    },
+    {
+      "bom-ref": "search-service",
+      "name": "Search Service",
+      "version": "3.0.0"
+    },
+    {
+      "bom-ref": "recommendation-service",
+      "name": "Recommendation Engine",
+      "version": "2.0.0"
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "frontend-web",
+      "dependsOn": ["api-gateway"]
+    },
+    {
+      "ref": "frontend-mobile",
+      "dependsOn": ["api-gateway"]
+    },
+    {
+      "ref": "api-gateway",
+      "dependsOn": ["auth-service", "user-service", "product-service", "order-service", "search-service", "recommendation-service"]
+    },
+    {
+      "ref": "auth-service",
+      "dependsOn": ["postgres-primary", "redis-master"]
+    },
+    {
+      "ref": "user-service",
+      "dependsOn": ["postgres-primary", "redis-master", "notification-service"]
+    },
+    {
+      "ref": "product-service",
+      "dependsOn": ["mongodb", "elasticsearch", "redis-master"]
+    },
+    {
+      "ref": "order-service",
+      "dependsOn": ["postgres-primary", "kafka", "payment-service", "notification-service"]
+    },
+    {
+      "ref": "payment-service",
+      "dependsOn": ["postgres-primary", "kafka"]
+    },
+    {
+      "ref": "notification-service",
+      "dependsOn": ["kafka", "redis-master"]
+    },
+    {
+      "ref": "analytics-service",
+      "dependsOn": ["kafka", "elasticsearch", "postgres-replica"]
+    },
+    {
+      "ref": "search-service",
+      "dependsOn": ["elasticsearch"]
+    },
+    {
+      "ref": "recommendation-service",
+      "dependsOn": ["mongodb", "redis-master", "analytics-service"]
+    },
+    {
+      "ref": "postgres-primary",
+      "dependsOn": []
+    },
+    {
+      "ref": "postgres-replica",
+      "dependsOn": ["postgres-primary"]
+    },
+    {
+      "ref": "mongodb",
+      "dependsOn": []
+    },
+    {
+      "ref": "redis-master",
+      "dependsOn": []
+    },
+    {
+      "ref": "redis-slave",
+      "dependsOn": ["redis-master"]
+    },
+    {
+      "ref": "kafka",
+      "dependsOn": ["zookeeper"]
+    },
+    {
+      "ref": "zookeeper",
+      "dependsOn": []
+    },
+    {
+      "ref": "elasticsearch",
+      "dependsOn": []
+    },
+    {
+      "ref": "kibana",
+      "dependsOn": ["elasticsearch"]
+    },
+    {
+      "ref": "prometheus",
+      "dependsOn": []
+    },
+    {
+      "ref": "grafana",
+      "dependsOn": ["prometheus"]
+    }
+  ],
+  "compositions": [
+    {
+      "aggregate": "complete",
+      "assemblies": [
+        "frontend-web",
+        "frontend-mobile",
+        "api-gateway"
+      ]
+    }
+  ]
+}

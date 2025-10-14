@@ -1,0 +1,59 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e8b2c3a-0000-4000-8000-000000000001",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2024-01-15T10:00:00Z",
+    "authors": [
+      {
+        "name": "Test Author",
+        "email": "test@example.com"
+      }
+    ],
+    "tools": [
+      {
+        "vendor": "bom-dagger",
+        "name": "test-generator",
+        "version": "1.0.0"
+      }
+    ]
+  },
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "comp-a",
+      "name": "Component A",
+      "version": "1.0.0",
+      "description": "A simple component"
+    },
+    {
+      "type": "library",
+      "bom-ref": "comp-b",
+      "name": "Component B",
+      "version": "2.0.0",
+      "description": "Another component"
+    },
+    {
+      "type": "library",
+      "bom-ref": "comp-c",
+      "name": "Component C",
+      "version": "3.0.0",
+      "description": "Third component"
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "comp-a",
+      "dependsOn": ["comp-b", "comp-c"]
+    },
+    {
+      "ref": "comp-b",
+      "dependsOn": ["comp-c"]
+    },
+    {
+      "ref": "comp-c",
+      "dependsOn": []
+    }
+  ]
+}

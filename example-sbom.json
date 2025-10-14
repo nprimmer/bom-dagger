@@ -1,0 +1,133 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2024-01-15T10:00:00Z",
+    "component": {
+      "type": "application",
+      "bom-ref": "web-app",
+      "name": "Sample Web Application",
+      "version": "1.0.0"
+    }
+  },
+  "components": [
+    {
+      "type": "application",
+      "bom-ref": "frontend",
+      "name": "React Frontend",
+      "version": "2.1.0",
+      "purl": "pkg:npm/frontend@2.1.0"
+    },
+    {
+      "type": "application",
+      "bom-ref": "api-gateway",
+      "name": "API Gateway",
+      "version": "1.5.0",
+      "purl": "pkg:docker/api-gateway@1.5.0"
+    },
+    {
+      "type": "application",
+      "bom-ref": "auth-service",
+      "name": "Authentication Service",
+      "version": "3.2.1",
+      "purl": "pkg:docker/auth-service@3.2.1"
+    },
+    {
+      "type": "application",
+      "bom-ref": "user-service",
+      "name": "User Service",
+      "version": "2.0.0",
+      "purl": "pkg:docker/user-service@2.0.0"
+    },
+    {
+      "type": "application",
+      "bom-ref": "order-service",
+      "name": "Order Service",
+      "version": "1.8.3",
+      "purl": "pkg:docker/order-service@1.8.3"
+    },
+    {
+      "type": "library",
+      "bom-ref": "postgres-db",
+      "name": "PostgreSQL Database",
+      "version": "14.5",
+      "purl": "pkg:docker/postgres@14.5"
+    },
+    {
+      "type": "library",
+      "bom-ref": "redis-cache",
+      "name": "Redis Cache",
+      "version": "7.0.5",
+      "purl": "pkg:docker/redis@7.0.5"
+    },
+    {
+      "type": "library",
+      "bom-ref": "rabbitmq",
+      "name": "RabbitMQ",
+      "version": "3.11.0",
+      "purl": "pkg:docker/rabbitmq@3.11.0"
+    },
+    {
+      "type": "library",
+      "bom-ref": "elasticsearch",
+      "name": "Elasticsearch",
+      "version": "8.5.0",
+      "purl": "pkg:docker/elasticsearch@8.5.0"
+    },
+    {
+      "type": "library",
+      "bom-ref": "nginx",
+      "name": "Nginx Load Balancer",
+      "version": "1.23.0",
+      "purl": "pkg:docker/nginx@1.23.0"
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "web-app",
+      "dependsOn": ["frontend", "api-gateway"]
+    },
+    {
+      "ref": "frontend",
+      "dependsOn": ["nginx"]
+    },
+    {
+      "ref": "nginx",
+      "dependsOn": []
+    },
+    {
+      "ref": "api-gateway",
+      "dependsOn": ["auth-service", "user-service", "order-service"]
+    },
+    {
+      "ref": "auth-service",
+      "dependsOn": ["postgres-db", "redis-cache"]
+    },
+    {
+      "ref": "user-service",
+      "dependsOn": ["postgres-db", "elasticsearch"]
+    },
+    {
+      "ref": "order-service",
+      "dependsOn": ["postgres-db", "rabbitmq"]
+    },
+    {
+      "ref": "postgres-db",
+      "dependsOn": []
+    },
+    {
+      "ref": "redis-cache",
+      "dependsOn": []
+    },
+    {
+      "ref": "rabbitmq",
+      "dependsOn": []
+    },
+    {
+      "ref": "elasticsearch",
+      "dependsOn": []
+    }
+  ]
+}
