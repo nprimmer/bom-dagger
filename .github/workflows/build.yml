@@ -141,7 +141,7 @@ jobs:
           fi
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: release/*
           draft: false
@@ -201,7 +201,7 @@ jobs:
           ls -la
 
       - name: Update latest development build
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: latest-dev
           name: Latest Development Build
